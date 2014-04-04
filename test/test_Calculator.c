@@ -345,11 +345,208 @@ void test_evaluateAllOperatorsOnStack_will_evaluate_untill_the_end_of_the_operat
 	evaluateAllOperatorsOnStack(operatorStack,dataStack);
 }
 
+void test_evaluate_should_return_5_for_2_plus_3(void)
+{
+	//2+3
+	Tokenizer newTokenizer;
+	Stack operatorStack;
+	Stack dataStack;
+	int result;
+	OperatorToken operator[]={{.type=OPERATOR_TOKEN,.name ="+",.precedence = 70}};
+	NumberToken num[]={{.type = NUMBER_TOKEN,.value = 2},{.type = NUMBER_TOKEN,.value = 3}};
+	NumberToken answer[] ={ {.type = NUMBER_TOKEN,.value =5 }};
 
+	stackNew_ExpectAndReturn(&operatorStack); 
+	stackNew_ExpectAndReturn(&dataStack); 
+	tokenizerNew_ExpectAndReturn("2+3",&newTokenizer);
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[0]);
+	push_Expect(&dataStack,(Token*)&num[0]);
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&operator[0]);
+	pop_ExpectAndReturn(&operatorStack,NULL);       //Function try
+	push_Expect(&operatorStack,(Token*)&operator[0]);	//This one also
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[1]);
+	push_Expect(&dataStack,(Token*)&num[1]);
+	nextToken_ExpectAndReturn(&newTokenizer,NULL);
+	
+	pop_ExpectAndReturn(&operatorStack,&operator[0]);
+	
+	pop_ExpectAndReturn(&dataStack,&num[0]); //inside the function
+	pop_ExpectAndReturn(&dataStack,&num[1]);	//pop out for calculate
+	createNumberToken_ExpectAndReturn(5,&answer[0]);
+	push_Expect(&dataStack,&answer[0]);
+	pop_ExpectAndReturn(&operatorStack,NULL);
+	pop_ExpectAndReturn(&dataStack,&answer[0]);
+	result = evaluate("2+3");
+	TEST_ASSERT_EQUAL(5,result);
+}
 
+void test_evaluate_should_return_12_for_4_multiply_3(void)
+{
+	//4*3
+	Tokenizer newTokenizer;
+	Stack operatorStack;
+	Stack dataStack;
+	int result;
+	OperatorToken operator[]={{.type=OPERATOR_TOKEN,.name ="*",.precedence = 70}};
+	NumberToken num[]={{.type = NUMBER_TOKEN,.value = 4},{.type = NUMBER_TOKEN,.value = 3}};
+	NumberToken answer[] ={ {.type = NUMBER_TOKEN,.value =12 }};
 
+	stackNew_ExpectAndReturn(&operatorStack); 
+	stackNew_ExpectAndReturn(&dataStack); 
+	tokenizerNew_ExpectAndReturn("4*3",&newTokenizer);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[0]);
+	push_Expect(&dataStack,(Token*)&num[0]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&operator[0]);
+	pop_ExpectAndReturn(&operatorStack,NULL);       //Function try
+	push_Expect(&operatorStack,(Token*)&operator[0]);	//This one also
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[1]);
+	push_Expect(&dataStack,(Token*)&num[1]);
+	nextToken_ExpectAndReturn(&newTokenizer,NULL);
+	
+	pop_ExpectAndReturn(&operatorStack,&operator[0]);
+	
+	pop_ExpectAndReturn(&dataStack,&num[0]); //inside the function
+	pop_ExpectAndReturn(&dataStack,&num[1]);	//pop out for calculate
+	createNumberToken_ExpectAndReturn(12,&answer[0]);
+	push_Expect(&dataStack,&answer[0]);
+	pop_ExpectAndReturn(&operatorStack,NULL);
+	pop_ExpectAndReturn(&dataStack,&answer[0]);
+	result = evaluate("4*3");
+	TEST_ASSERT_EQUAL(12,result);
+}
 
+//Haven't completed, unknown case.
+void xtest_evaluate_should_return_12_for_3_plus_4_plus_5_minus_6(void)
+{
+	//3+4+5-6
+	Tokenizer newTokenizer;
+	Stack operatorStack;
+	Stack dataStack;
+	int result;
+	OperatorToken operator[]={{.type=OPERATOR_TOKEN,.name ="+",.precedence = 70},{.type=OPERATOR_TOKEN,.name ="+",.precedence = 70},{.type=OPERATOR_TOKEN,.name ="-",.precedence = 70}};
+	NumberToken num[]={{.type = NUMBER_TOKEN,.value = 3},{.type = NUMBER_TOKEN,.value = 4},{.type = NUMBER_TOKEN,.value = 5},{.type = NUMBER_TOKEN,.value = 6}};
+	NumberToken answer[] ={ {.type = NUMBER_TOKEN,.value =7 },{.type = NUMBER_TOKEN,.value =12 },{.type = NUMBER_TOKEN,.value =6 }};
 
+	stackNew_ExpectAndReturn(&operatorStack); 
+	stackNew_ExpectAndReturn(&dataStack); 
+	tokenizerNew_ExpectAndReturn("3+4+5-6",&newTokenizer);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[0]);	//3
+	push_Expect(&dataStack,(Token*)&num[0]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&operator[0]);	//+
+	pop_ExpectAndReturn(&operatorStack,NULL);       //Function try
+	push_Expect(&operatorStack,(Token*)&operator[0]);	//This one also
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[1]);	//4
+	push_Expect(&dataStack,(Token*)&num[1]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&operator[1]);//+
+	pop_ExpectAndReturn(&operatorStack,&operator[0]);       //Function try
+	pop_ExpectAndReturn(&dataStack,&num[0]);
+	pop_ExpectAndReturn(&dataStack,&num[1]);
+	createNumberToken_ExpectAndReturn(7,&answer[0]);
+	push_Expect(&dataStack,(Token*)&answer[0]);
+	pop_ExpectAndReturn(&operatorStack,NULL);
+	push_Expect(&operatorStack,(Token*)&operator[1]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[2]); //5
+	push_Expect(&dataStack,(Token*)&num[2]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&operator[2]);//-
+	pop_ExpectAndReturn(&operatorStack,&operator[1]);       //Function try
+	pop_ExpectAndReturn(&dataStack,&num[2]);
+	pop_ExpectAndReturn(&dataStack,&answer[0]);
+	createNumberToken_ExpectAndReturn(12,&answer[1]);
+	push_Expect(&dataStack,(Token*)&answer[1]);
+	pop_ExpectAndReturn(&operatorStack,NULL);
+	push_Expect(&operatorStack,(Token*)&operator[2]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[3]); //6
+	push_Expect(&dataStack,(Token*)&num[3]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,NULL); //End
+	
+	pop_ExpectAndReturn(&operatorStack,&operator[2]);
+	
+	pop_ExpectAndReturn(&dataStack,&num[3]); //inside the function
+	pop_ExpectAndReturn(&dataStack,&answer[1]);	//pop out for calculate
+	createNumberToken_ExpectAndReturn(6,&answer[2]);
+	push_Expect(&dataStack,&answer[2]);
+	pop_ExpectAndReturn(&operatorStack,NULL);
+	pop_ExpectAndReturn(&dataStack,&answer[2]);
+
+	result = evaluate("3+4+5-6");
+	TEST_ASSERT_EQUAL(6,result);
+}
+
+void test_evaluate_should_return_12_for_111_divide_12_plus_13_OR_14(void)
+{
+	//111/12+13&14
+	Tokenizer newTokenizer;
+	Stack operatorStack;
+	Stack dataStack;
+	int result;
+	OperatorToken operator[]={{.type=OPERATOR_TOKEN,.name ="/",.precedence = 100},{.type=OPERATOR_TOKEN,.name ="+",.precedence = 70},{.type=OPERATOR_TOKEN,.name ="&",.precedence = 20}};
+	NumberToken answer[]={{.type = NUMBER_TOKEN,.value = 9},{.type = NUMBER_TOKEN,.value = 22},{.type = NUMBER_TOKEN,.value = 22}};
+	NumberToken num[] ={ {.type = NUMBER_TOKEN,.value =111 },{.type = NUMBER_TOKEN,.value =12},{.type = NUMBER_TOKEN,.value = 13 },{.type = NUMBER_TOKEN,.value =14 }};
+
+	stackNew_ExpectAndReturn(&operatorStack); 
+	stackNew_ExpectAndReturn(&dataStack); 
+	tokenizerNew_ExpectAndReturn("111/12+13&14",&newTokenizer);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[0]);//111
+	push_Expect(&dataStack,(Token*)&num[0]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&operator[0]); 	//	/
+	pop_ExpectAndReturn(&operatorStack,NULL);       
+	push_Expect(&operatorStack,(Token*)&operator[0]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[1]);//12
+	push_Expect(&dataStack,(Token*)&num[1]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&operator[1]);//+
+	pop_ExpectAndReturn(&operatorStack,&operator[0]);       
+	pop_ExpectAndReturn(&dataStack,&num[0]);
+	pop_ExpectAndReturn(&dataStack,&num[1]);
+	createNumberToken_ExpectAndReturn(9,&answer[0]);
+	push_Expect(&dataStack,&answer[0]);
+/*	pop_ExpectAndReturn(&operatorStack,NULL);
+	push_Expect(&operatorStack,(Token*)&operator[1]);
+
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[2]);//13
+	push_Expect(&dataStack,(Token*)&num[2]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&operator[2]);//+
+	pop_ExpectAndReturn(&operatorStack,&operator[1]);       
+	pop_ExpectAndReturn(&dataStack,&answer[0]);
+	pop_ExpectAndReturn(&dataStack,&num[2]);
+	createNumberToken_ExpectAndReturn(22,&answer[1]);
+	push_Expect(&dataStack,(Token*)&answer[1]);
+	pop_ExpectAndReturn(&operatorStack,NULL);
+	push_Expect(&operatorStack,(Token*)&operator[2]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[3]);//14
+	push_Expect(&dataStack,(Token*)&num[3]);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,NULL);
+	
+	pop_ExpectAndReturn(&operatorStack,&operator[2]);
+	
+	pop_ExpectAndReturn(&dataStack,&num[3]); //inside the function
+	pop_ExpectAndReturn(&dataStack,&answer[1]);	//pop out for calculate
+	createNumberToken_ExpectAndReturn(22,&answer[2]);
+	push_Expect(&dataStack,&answer[2]);
+	pop_ExpectAndReturn(&operatorStack,NULL);
+	pop_ExpectAndReturn(&dataStack,&answer[2]);
+
+	*/
+	result = evaluate("111/12+13&14");
+	TEST_ASSERT_EQUAL(22,result);
+}
 
 
 
