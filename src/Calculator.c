@@ -27,8 +27,17 @@ int evaluate(char *expression)
 	Tokenizer *newTokenizer = tokenizerNew(expression);
 	Token *tempToken = nextToken(newTokenizer);
 	NumberToken *answerToken;
+	int check =0;
 	while(tempToken!=NULL)
 	{
+		if(check%2==0&&tempToken->type==OPERATOR_TOKEN)
+		{
+			Throw(ERR_NOT_DATA);
+		}
+		else if(check%2 !=0 && tempToken->type==NUMBER_TOKEN)
+		{
+			Throw(ERR_NOT_OPERATOR);
+		}
 		if(tempToken->type==NUMBER_TOKEN)
 		{
 			push(dataStack,tempToken);
@@ -38,10 +47,14 @@ int evaluate(char *expression)
 			tryEvaluateOperatorOnStackThenPush(operatorStack,dataStack,(OperatorToken*)tempToken);
 		}
 		tempToken = nextToken(newTokenizer);
+		check++;
+	}
+	if(check%2==0)
+	{
+		Throw(INVALID_EXPRESSION);
 	}
 	evaluateAllOperatorsOnStack(operatorStack,dataStack);
 	answerToken = (NumberToken*)pop(dataStack);
-	printf("Completed with answer:%d\n",answerToken->value);
 	return answerToken->value;
 	
 }
@@ -101,10 +114,8 @@ void tryEvaluateOperatorOnStackThenPush(Stack *operatorStack,Stack *dataStack,Op
 				{
 				
 					push(operatorStack,newToken);
-					printf("operator(Unused):%s\n",newToken->name);
 				}
 				push(operatorStack,operator);
-				printf("operator:%s\n",operator->name);
 			
 		
 	}
@@ -174,7 +185,6 @@ void evaluateOperator(Stack *dataStack,OperatorToken *operator)
 		}
 		
 	}
-	printf("answer:%d\n",result);
 	answer =createNumberToken(result);
 	push(dataStack,answer);
 	free(num1);

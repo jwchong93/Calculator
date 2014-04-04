@@ -426,9 +426,13 @@ void xtest_evaluate_should_return_12_for_3_plus_4_plus_5_minus_6(void)
 	Stack operatorStack;
 	Stack dataStack;
 	int result;
-	OperatorToken operator[]={{.type=OPERATOR_TOKEN,.name ="+",.precedence = 70},{.type=OPERATOR_TOKEN,.name ="+",.precedence = 70},{.type=OPERATOR_TOKEN,.name ="-",.precedence = 70}};
-	NumberToken num[]={{.type = NUMBER_TOKEN,.value = 3},{.type = NUMBER_TOKEN,.value = 4},{.type = NUMBER_TOKEN,.value = 5},{.type = NUMBER_TOKEN,.value = 6}};
-	NumberToken answer[] ={ {.type = NUMBER_TOKEN,.value =7 },{.type = NUMBER_TOKEN,.value =12 },{.type = NUMBER_TOKEN,.value =6 }};
+	OperatorToken operator[]={{.type=OPERATOR_TOKEN,.name ="+",.precedence = 70},
+							{.type=OPERATOR_TOKEN,.name ="+",.precedence = 70},
+							{.type=OPERATOR_TOKEN,.name ="-",.precedence = 70}};
+	NumberToken num[]={{.type = NUMBER_TOKEN,.value = 3},{.type = NUMBER_TOKEN,.value = 4},
+							{.type = NUMBER_TOKEN,.value = 5},{.type = NUMBER_TOKEN,.value = 6}};
+	NumberToken answer[] ={ {.type = NUMBER_TOKEN,.value =7 },{.type = NUMBER_TOKEN,.value =12 },
+							{.type = NUMBER_TOKEN,.value =6 }};
 
 	stackNew_ExpectAndReturn(&operatorStack); 
 	stackNew_ExpectAndReturn(&dataStack); 
@@ -462,7 +466,7 @@ void xtest_evaluate_should_return_12_for_3_plus_4_plus_5_minus_6(void)
 	pop_ExpectAndReturn(&dataStack,&answer[0]);
 	createNumberToken_ExpectAndReturn(12,&answer[1]);
 	push_Expect(&dataStack,(Token*)&answer[1]);
-	pop_ExpectAndReturn(&operatorStack,NULL);
+/*	pop_ExpectAndReturn(&operatorStack,NULL);
 	push_Expect(&operatorStack,(Token*)&operator[2]);
 	
 	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&num[3]); //6
@@ -478,12 +482,12 @@ void xtest_evaluate_should_return_12_for_3_plus_4_plus_5_minus_6(void)
 	push_Expect(&dataStack,&answer[2]);
 	pop_ExpectAndReturn(&operatorStack,NULL);
 	pop_ExpectAndReturn(&dataStack,&answer[2]);
-
+*/
 	result = evaluate("3+4+5-6");
 	TEST_ASSERT_EQUAL(6,result);
 }
 
-void test_evaluate_should_return_12_for_111_divide_12_plus_13_OR_14(void)
+void xtest_evaluate_should_return_12_for_111_divide_12_plus_13_OR_14(void)
 {
 	//111/12+13&14
 	Tokenizer newTokenizer;
@@ -548,10 +552,154 @@ void test_evaluate_should_return_12_for_111_divide_12_plus_13_OR_14(void)
 	TEST_ASSERT_EQUAL(22,result);
 }
 
+void test_evaluate_will_throw_error_for_expression_start_with_operator()
+{
+	Tokenizer newTokenizer;
+	Stack operatorStack;
+	Stack dataStack;
+	OperatorToken plus={.type=OPERATOR_TOKEN,.name="+"};
+	ErrorCode exception;
+	int result;
+	stackNew_ExpectAndReturn(&operatorStack); 
+	stackNew_ExpectAndReturn(&dataStack); 
+	tokenizerNew_ExpectAndReturn("+",&newTokenizer);
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&plus);
+	Try
+	{
+		result = evaluate("+");
+	}
+	Catch(exception)
+	{
+		TEST_ASSERT_EQUAL(ERR_NOT_DATA,exception);
+	}
+}
 
+void test_evaluate_will_throw_error_for_expression_which_contain_number_consequently()
+{
+	Tokenizer newTokenizer;
+	Stack operatorStack;
+	Stack dataStack;
+	NumberToken number38={.type=NUMBER_TOKEN,.value=38};
+	NumberToken number39={.type=NUMBER_TOKEN,.value=39};
+	ErrorCode exception;
+	int result;
+	stackNew_ExpectAndReturn(&operatorStack); 
+	stackNew_ExpectAndReturn(&dataStack); 
+	tokenizerNew_ExpectAndReturn("38 39 +",&newTokenizer);
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&number38);
+	push_Expect(&dataStack,&number38);
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&number39);
+	Try
+	{
+		result = evaluate("38 39 +");
+	}
+	Catch(exception)
+	{
+		TEST_ASSERT_EQUAL(ERR_NOT_OPERATOR,exception);
+	}
+}
 
+void test_evaluate_will_throw_error_for_expression_which_contain_operator_consequently()
+{
+	Tokenizer newTokenizer;
+	Stack operatorStack;
+	Stack dataStack;
+	NumberToken number40={.type=NUMBER_TOKEN,.value=40};
+	OperatorToken plus={.type=OPERATOR_TOKEN,.name="+"};
+	OperatorToken multiply={.type=OPERATOR_TOKEN,.name="*"};
+	ErrorCode exception;
+	int result;
+	stackNew_ExpectAndReturn(&operatorStack); 
+	stackNew_ExpectAndReturn(&dataStack); 
+	tokenizerNew_ExpectAndReturn("40+*41",&newTokenizer);
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&number40);
+	push_Expect(&dataStack,&number40);
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&plus);
+	pop_ExpectAndReturn(&operatorStack,NULL);   
+	push_Expect(&operatorStack,(Token*)&plus);
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&multiply);
 
+	Try
+	{
+		result = evaluate("40+*41");
+	}
+	Catch(exception)
+	{
+		TEST_ASSERT_EQUAL(ERR_NOT_DATA,exception);
+	}
+}
 
+void test_evaluate_will_throw_error_for_expression_which_contain_invalid_operator()
+{
+	Tokenizer newTokenizer;
+	Stack operatorStack;
+	Stack dataStack;
+	NumberToken number43={.type=NUMBER_TOKEN,.value=43};
+	OperatorToken UnknownOperator={.type=OPERATOR_TOKEN,.name="#"};
+	ErrorCode exception;
+	int result;
+	stackNew_ExpectAndReturn(&operatorStack); 
+	stackNew_ExpectAndReturn(&dataStack); 
+	tokenizerNew_ExpectAndReturn("43#",&newTokenizer);
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&number43);
+	push_Expect(&dataStack,&number43);
+	nextToken_ExpectAndThrow(&newTokenizer,ERR_INVALID_TOKEN);
+	Try
+	{
+		result = evaluate("43#");
+	}
+	Catch(exception)
+	{
+		TEST_ASSERT_EQUAL(ERR_INVALID_TOKEN,exception);
+	}
+}
+
+void test_evaluate_will_throw_error_for_expression_which_is_an_invalid_expression()
+{
+	Tokenizer newTokenizer;
+	Stack operatorStack;
+	Stack dataStack;
+	NumberToken number42={.type=NUMBER_TOKEN,.value=42};
+	OperatorToken XOR={.type=OPERATOR_TOKEN,.name="^",.precedence=50};
+	NumberToken number2={.type=NUMBER_TOKEN,.value=2};
+	OperatorToken minus={.type=OPERATOR_TOKEN,.name="-",.precedence = 70};
+	ErrorCode exception;
+	int result;
+	stackNew_ExpectAndReturn(&operatorStack); 
+	stackNew_ExpectAndReturn(&dataStack); 
+	tokenizerNew_ExpectAndReturn("42^2-",&newTokenizer);
+	
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&number42);//111
+	push_Expect(&dataStack,(Token*)&number42);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&XOR); 	//	/
+	pop_ExpectAndReturn(&operatorStack,NULL);       
+	push_Expect(&operatorStack,(Token*)&XOR);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&number2);//12
+	push_Expect(&dataStack,(Token*)&number2);
+	
+	nextToken_ExpectAndReturn(&newTokenizer,(Token*)&minus);//+
+	pop_ExpectAndReturn(&operatorStack,&XOR);    
+	push_Expect(&operatorStack,(Token*)&XOR);
+	push_Expect(&operatorStack,(Token*)&minus);
+
+	nextToken_ExpectAndReturn(&newTokenizer,NULL);
+	Try
+	{
+		result = evaluate("42^2-");
+	}
+	Catch(exception)
+	{
+		TEST_ASSERT_EQUAL(INVALID_EXPRESSION,exception);
+	}
+	
+	
+
+	
+	
+}
 
 
 
