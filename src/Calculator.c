@@ -135,8 +135,8 @@ void evaluateOperator(Stack *dataStack,OperatorToken *operator)
 	NumberToken *num2;
 	NumberToken *answer;
 	int result;
-	num1 = (NumberToken *)pop(dataStack);
 	num2 = (NumberToken *)pop(dataStack);
+	num1 = (NumberToken *)pop(dataStack);
 	switch(operator->name[0])
 	{
 		case '+':
