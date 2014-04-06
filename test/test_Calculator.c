@@ -418,7 +418,6 @@ void test_evaluate_should_return_12_for_4_multiply_3(void)
 	TEST_ASSERT_EQUAL(12,result);
 }
 
-//Haven't completed, unknown case.
 void test_evaluate_for_3_plus_4_plus_5_minus_6(void)
 {
 	//3+4+5-6
@@ -498,9 +497,9 @@ void xtest_evaluate_should_return_12_for_111_divide_12_plus_13_OR_14(void)
 	NumberToken number12 = {.type=NUMBER_TOKEN,.value=12};
 	NumberToken number13 = {.type=NUMBER_TOKEN,.value=13};
 	NumberToken number14 = {.type=NUMBER_TOKEN,.value=14};
-	NumberToken number9 = {.type=NUMBER_TOKEN,.value=9};
 	NumberToken number22 = {.type=NUMBER_TOKEN,.value=22};
 	NumberToken number6 = {.type=NUMBER_TOKEN,.value=6};
+	NumberToken number9 = {.type=NUMBER_TOKEN,.value=9};
 	
 	OperatorToken operatorAND={.type=OPERATOR_TOKEN,.name="&",.precedence=20};
 	OperatorToken operatorADD={.type=OPERATOR_TOKEN,.name="+",.precedence=70};
