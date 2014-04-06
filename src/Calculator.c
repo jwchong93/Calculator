@@ -189,4 +189,5 @@ void evaluateOperator(Stack *dataStack,OperatorToken *operator)
 	push(dataStack,answer);
 	free(num1);
 	free(num2);
+	free(operator);
 }
